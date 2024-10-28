@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express();
 
-const roles = require('./product')
+const products = require('./product')
+const category = require('./category')
 
-router.use("/roles", roles);
+router.use("/product", products);
+router.use("/category", category);
 
-modmule.exports = router;
+module.exports = router;
