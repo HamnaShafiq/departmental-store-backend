@@ -10,10 +10,6 @@ exports.create = async (req, res) => {
             image
         } = req.body;
 
-        console.log('req.file', req.file);
-        console.log('req.file.filename', req.file.filename);
-
-
         // const category = new categoryModel({
         const category = await categoryModel.create({
             name,
@@ -44,7 +40,7 @@ exports.update = async (req, res) => {
             slug: req.body.slug,
         };
 
-        if (req.file) {
+        if (req.file ) {
             // Delete the old image
             deleteImage(category, res);
             // Now add the new image path
@@ -80,10 +76,51 @@ exports.destroy = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const category = await categoryModel.find();
-        sendSuccessResponse(res, 'All categories found successfully', category)
+        const category = await categoryModel.find().populate('products');
+        sendSuccessResponse(res, 'All categories fetched successfully', category)
     } catch (e) {
         console.log(e)
         sendErrorResponse(res, e)
+    }
+}
+
+exports.read = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const category = await categoryModel.findById(id);
+        sendSuccessResponse(res, 'Category fetched successfully', category)
+    } catch (e) {
+        console.log(e)
+        sendErrorResponse(res, e)
+    }
+}
+
+exports.addProducts = async (req, res) => {
+    const { slug } = req.params;
+    const productIds = req.body.productIds;
+
+    if (!Array.isArray(productIds)) {
+        return res.status(400).json({ message: 'Product IDs should be an array' });
+    }
+
+    try {
+        const category = await categoryModel.findOneAndUpdate(
+            { slug },
+            { $push: { products: { $each: productIds } } },
+            { new: true }
+        );
+
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        const populatedCategory = await categoryModel
+            .findById(category._id)
+            .populate('products');
+
+        res.status(200).json({ message: 'Products added successfully', category: populatedCategory });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 }

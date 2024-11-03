@@ -1,13 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../utils/uploadImage")
+const uploadMiddleware = require("../utils/uploadImage")
 
 const {
     getAll,
-    create
+    create,
+    update,
+    destroy
 } = require('../controllers/product');
 
-router.post("/create" , upload('product').single('image'), create);
+
+router.post("/create" , uploadMiddleware('product').array('images'), create);
+router.post("/update/:id" , uploadMiddleware('product').single('image'), update);
+router.delete("/destroy/:id", destroy);
 router.get("/", getAll);
 
 module.exports = router;
