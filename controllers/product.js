@@ -40,22 +40,31 @@ exports.create = async (req, res) => {
         sendErrorResponse(res, e)
     }
 }
-
 exports.update = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // Check if the product exists
         const product = await ProductModel.findById(id);
         if (!product) {
             return res.status(404).json({ success: false, msg: 'Product not found' });
         }
 
-        // Prepare update data
+        let images = [...product.images];
+
+        if (req.files && req.files.length > 0) {
+            images = [
+                ...images,
+                ...req.files.map((img) => {
+                    const filePath = img.path.slice(img.path.indexOf('\\images\\product'));
+                    return { url: `${filePath}` };
+                }),
+            ];
+        }
+
         const updatedData = {
             name: req.body.name,
             slug: req.body.slug,
-            image: req.body.image,
+            images,
             brand: req.body.brand,
             category: req.body.category,
             description: req.body.description,
@@ -66,27 +75,19 @@ exports.update = async (req, res) => {
             featuredProduct: req.body.featuredProduct
         };
 
-        if (req.file) {
-            deleteImage(product, res);
-            // Add the new image path
-            updatedData.image = `/images/product/${req.file.filename}`;
-        }
-
-        // Update the product in the database
         const updatedProduct = await ProductModel.findByIdAndUpdate(id, updatedData, { new: true });
 
-        // Check if the update was successful
         if (!updatedProduct) {
             return res.status(400).json({ success: false, msg: 'Failed to update product' });
         }
 
-        // Send success response
         sendSuccessResponse(res, 'Product updated successfully', updatedProduct);
     } catch (e) {
         console.error(e);
         sendErrorResponse(res, e);
     }
 };
+
 
 exports.destroy = async (req, res) => {
     try {

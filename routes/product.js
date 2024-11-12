@@ -11,7 +11,7 @@ const {
 } = require('../controllers/product');
 
 router.post("/create", uploadMiddleware('product').array('images'), create);
-router.post("/update/:id", uploadMiddleware('product').single('image'), update);
+router.post("/update/:id", uploadMiddleware('product').array('images'), update);
 router.delete("/destroy/:id", destroy);
 router.get("/", getAll);
 
