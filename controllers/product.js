@@ -113,7 +113,7 @@ exports.read = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const products = await ProductModel.find();
+        const products = await ProductModel.find();       
         sendSuccessResponse(res, 'All products fetched successfully', products)
     } catch (e) {
         console.log(e)
