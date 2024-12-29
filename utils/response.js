@@ -1,4 +1,4 @@
-const ThrowError = require("./ThrowError");
+const ThrowError = require("./throwError");
 
 exports.sendErrorResponse = (res, error) => {
     return res.status(error instanceof ThrowError ? error.statusCode : 500).json({
